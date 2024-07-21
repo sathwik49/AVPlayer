@@ -18,7 +18,6 @@ const Signup = () => {
         email,
         mobile,
       });
-      console.log("Success:", result.data);
       setMessage(result.data.message);setSuccess(result.data.success);setUsername("");setPassword("");setEmail("");setMobile("");
     } catch (error) {
       console.error("Error:", error.response.data);
@@ -33,7 +32,7 @@ const Signup = () => {
 
   return (
     <div>
-      {message && <p>{message}{success}</p>}
+      {message && <p>{message}</p>}
       <h1>Signup</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="username">Username</label>
