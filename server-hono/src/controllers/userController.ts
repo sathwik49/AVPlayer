@@ -9,13 +9,13 @@ export const userSignup = async (c: Context) => {
     const inputValidation = userSignupValidation({ username, password, email, mobile });
 
     if (!inputValidation.success || inputValidation.errMessage) {
-      return c.json({ message: inputValidation.message || inputValidation.errMessage },403);
+      return c.json({ message: inputValidation.message || inputValidation.errMessage,success:false },403);
     }
 
     const duplicate:any = await findDocuments(c, { username },"users");
     
     if (duplicate.documents.length > 0) {
-      return c.json({ message: 'Username already exists' },403);
+      return c.json({ message: 'Username already exists',success:false },403);
     }
 
     const hashedPwd = await bcrypt.hash(password, 10);
@@ -27,12 +27,12 @@ export const userSignup = async (c: Context) => {
     },"users");
 
     if (newUser) {
-      return c.json({ message: 'User created successfully' },201);
+      return c.json({ message: 'User created successfully',success:true },201);
     }
 
-    return c.json({ message: 'Something went wrong. Try Again' },500);
+    return c.json({ message: 'Something went wrong. Try Again',success:false },500);
   } catch (error: any) {
-    return c.json({ message: 'mainErr:' + error.message },404);
+    return c.json({ message:error.message ,success:false},404);
   }
 };
 
