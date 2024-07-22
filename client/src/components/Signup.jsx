@@ -9,9 +9,11 @@ const Signup = () => {
   const [mobile, setMobile] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(null);
+  const [ isLoading,setIsLoading ] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const result = await axios.post(`${request.baseUrl}/api/v1/user/signup`, {
         username,
@@ -24,6 +26,8 @@ const Signup = () => {
       //console.error("Error:", error.response.data);
       setMessage(error.response.data.message);
       setSuccess(error.response.data.success);
+    }finally{
+      setIsLoading(false)
     }
     setTimeout(() => {
       setMessage("");
@@ -70,6 +74,7 @@ const Signup = () => {
         />
         <button type="submit">Sign up</button>
       </form>
+      <div> {isLoading ? "Loading....." : null} </div>
     </div>
   );
 };
