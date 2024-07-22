@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import request from '../api/request';
 
 const Signup = () => {
   const [username, setUsername] = useState("");
@@ -12,7 +13,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = await axios.post("https://avplayerserver.sathwik2625.workers.dev/api/v1/user/signup", {
+      const result = await axios.post(`${request.baseUrl}/api/v1/user/signup`, {
         username,
         password,
         email,
@@ -20,7 +21,7 @@ const Signup = () => {
       });
       setMessage(result.data.message);setSuccess(result.data.success);setUsername("");setPassword("");setEmail("");setMobile("");
     } catch (error) {
-      console.error("Error:", error.response.data);
+      //console.error("Error:", error.response.data);
       setMessage(error.response.data.message);
       setSuccess(error.response.data.success);
     }
@@ -32,7 +33,7 @@ const Signup = () => {
 
   return (
     <div>
-      {message && <p>{message}</p>}
+      <div>{message && <p>{message}</p>}</div>
       <h1>Signup</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="username">Username</label>

@@ -3,23 +3,36 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "env": "dotenv -e .dev.vars",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "tsx ./src/db/migrate.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.9.4",
     "bcryptjs": "^2.4.3",
-    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.32.0",
     "hono": "^4.5.1",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.1",
+    "pg": "^8.12.0",
+    "postgres": "^3.4.4",
     "uuid": "^10.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240718.0",
-    "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.11",
+    "@types/pg": "^8.11.6",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.23.0",
+    "prisma": "^5.17.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
     "wrangler": "^3.57.2"
   }
 }

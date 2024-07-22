@@ -2,8 +2,6 @@
 dist/
 .env
 wrangler.toml
-src/model
-src/config
 
 # dev
 .yarn/
