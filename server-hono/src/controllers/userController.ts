@@ -1,15 +1,18 @@
 import { Context } from "hono";
 import bcrypt from "bcryptjs";
-import { userSignupValidation } from "../zod/schemaValidation";
+import { userLoginValidation, userSignupValidation } from "../zod/schemaValidation";
 import { drizzle, NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import { users } from "../db/schema";
 import { config } from "dotenv";
 import { Bindings } from "../bindings";
 import { connectDB } from "../config/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { sign } from "hono/jwt";
+import { setCookie, setSignedCookie } from "hono/cookie";
 
-config({ path: ".dev.vars" });
+
+//config({ path: ".dev.vars" });
 let db:NeonHttpDatabase<Record<string, never>>;
 
 // const connectDB = async (c: Context<{ Bindings: Bindings }>) => {
@@ -82,6 +85,51 @@ export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
       500
     );
   } catch (error: any) {
-    return c.json({ message: error.stack, success: false }, 404);
+    return c.json({ message: error.message, success: false }, 404);
   }
 };
+
+export const userLogin = async (c: Context<{ Bindings: Bindings }>)=>{
+   try {
+    db = connectDB(c);
+    const { username,password } = await c.req.json();
+    const inputValidation = userLoginValidation({
+      username,
+      password,
+    });
+
+    if (!inputValidation.success || inputValidation.errMessage) {
+      return c.json(
+        {
+          message: inputValidation.message || inputValidation.errMessage,
+          success: false,
+        },
+        403
+      );
+    }
+    
+    const validUsername = await db.select().from(users).where(eq(users.username,username));
+    if(!(validUsername.length>0)){
+      return c.json({ message: "Username not found", success: false },403)
+    }
+    const validPassword = await bcrypt.compare(password, validUsername[0].password);
+    if(!validPassword){
+      return c.json({ message: "Invalid Password", success: false },403)
+    }
+    
+    
+    const token = await sign({
+      username:validUsername[0].username,email:validUsername[0].email
+    },c.env.JWT_PASSWORD)
+
+    setCookie(c,'jwt',token,{
+      httpOnly:true,
+      maxAge:60*60*24*7,
+      secure:true
+    }) 
+
+    return c.json({ message: "Login Successful", success: true }, 200);
+   } catch (error:any) {
+    return c.json({ message: error.message, success: false }, 404);
+   }
+}

@@ -21,3 +21,22 @@ export const userSignupValidation =  (obj:object)=>{
         return {errMessage:error.message};
     }
 }
+
+const userLoginSchema = zod.object({
+    username:zod.string(),
+    password:zod.string()
+})
+
+export const userLoginValidation = (obj:object)=>{
+    try {
+        const inputValidation = userLoginSchema.safeParse(obj)
+        if(!inputValidation.success){
+            let msg= "";
+            inputValidation.error.issues.map(issue => msg += `${issue.path}:${issue.message},  `)
+            return { message:msg,success:inputValidation.success };
+        }
+        return { success:inputValidation.success };
+    } catch (error:any) {
+        return {errMessage:error.message};
+    }
+}
