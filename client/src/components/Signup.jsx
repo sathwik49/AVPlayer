@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom'
 import request from '../api/request';
 
 const Signup = () => {
@@ -74,6 +75,10 @@ const Signup = () => {
         />
         <button type="submit">Sign up</button>
       </form>
+      <div>
+        Already had an account?
+        <Link to='/login' >Login</Link>
+      </div>
       <div> {isLoading ? "Loading....." : null} </div>
     </div>
   );
