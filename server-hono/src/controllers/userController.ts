@@ -1,6 +1,9 @@
 import { Context } from "hono";
 import bcrypt from "bcryptjs";
-import { userLoginValidation, userSignupValidation } from "../zod/schemaValidation";
+import {
+  userLoginValidation,
+  userSignupValidation,
+} from "../zod/schemaValidation";
 import { drizzle, NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import { users } from "../db/schema";
@@ -11,9 +14,7 @@ import { and, eq } from "drizzle-orm";
 import { sign } from "hono/jwt";
 import { setCookie, setSignedCookie } from "hono/cookie";
 
-
-//config({ path: ".dev.vars" });
-let db:NeonHttpDatabase<Record<string, never>>;
+let db: NeonHttpDatabase<Record<string, never>>;
 
 // const connectDB = async (c: Context<{ Bindings: Bindings }>) => {
 //   try {
@@ -30,9 +31,12 @@ let db:NeonHttpDatabase<Record<string, never>>;
 // };
 
 export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
-  db  = connectDB(c);
-
   try {
+    db = connectDB(c);
+    if (!db) {
+      return c.json({ message: "Internal Server Error" }, 500);
+      //console.log("no db");
+    }
     const { username, password, email, mobile } = await c.req.json();
     const inputValidation = userSignupValidation({
       username,
@@ -50,9 +54,15 @@ export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
         403
       );
     }
-    const duplicateUserName = await db.select().from(users).where(eq(users.username,username))
-    const duplicateEmail = await db.select().from(users).where(eq(users.email,email));
-    
+    const duplicateUserName = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
+    const duplicateEmail = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+
     if (duplicateUserName.length > 0) {
       return c.json(
         { message: "Username already exists", success: false },
@@ -60,10 +70,7 @@ export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
       );
     }
     if (duplicateEmail.length > 0) {
-      return c.json(
-        { message: "Email already used", success: false },
-        403
-      );
+      return c.json({ message: "Email already used", success: false }, 403);
     }
 
     const hashedPwd = await bcrypt.hash(password, 10);
@@ -89,10 +96,14 @@ export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
   }
 };
 
-export const userLogin = async (c: Context<{ Bindings: Bindings }>)=>{
-   try {
+export const userLogin = async (c: Context<{ Bindings: Bindings }>) => {
+  try {
     db = connectDB(c);
-    const { username,password } = await c.req.json();
+    if (!db) {
+      return c.json({ message: "Internal Server Error" }, 500);
+      //console.log("no db");
+    }
+    const { username, password } = await c.req.json();
     const inputValidation = userLoginValidation({
       username,
       password,
@@ -107,29 +118,45 @@ export const userLogin = async (c: Context<{ Bindings: Bindings }>)=>{
         403
       );
     }
-    
-    const validUsername = await db.select().from(users).where(eq(users.username,username));
-    if(!(validUsername.length>0)){
-      return c.json({ message: "Username not found", success: false },403)
-    }
-    const validPassword = await bcrypt.compare(password, validUsername[0].password);
-    if(!validPassword){
-      return c.json({ message: "Invalid Password", success: false },403)
-    }
-    
-    
-    const token = await sign({
-      username:validUsername[0].username,email:validUsername[0].email
-    },c.env.JWT_PASSWORD)
+    console.log("validation completed");
 
-    setCookie(c,'jwt',token,{
-      httpOnly:true,
-      maxAge:60*60*24*7,
-      secure:true
-    }) 
+    const validUsername = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
+    console.log("user found");
+    if (!(validUsername.length > 0)) {
+      return c.json({ message: "Username not found", success: false }, 403);
+    }
+    const validPassword = await bcrypt.compare(
+      password,
+      validUsername[0].password
+    );
+    if (!validPassword) {
+      return c.json({ message: "Invalid Password", success: false }, 403);
+    }
+    console.log("password matched");
+
+    const token = await sign(
+      {
+        username: validUsername[0].username,
+        email: validUsername[0].email,
+      },
+      c.env.JWT_PASSWORD
+    );
+    console.log(token);
+
+    setCookie(c, "jwt", token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7,
+      secure: true,
+    });
+    console.log("cokkie done");
 
     return c.json({ message: "Login Successful", success: true }, 200);
-   } catch (error:any) {
+  } catch (error: any) {
+    console.log();
+    
     return c.json({ message: error.message, success: false }, 404);
-   }
-}
+  }
+};
