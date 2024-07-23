@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const result = await axios.post(`${request.baseUrlDev}/api/v1/user/login`,{
+      const result = await axios.post(`${request.baseUrl}/api/v1/user/login`,{
         username,
         password
       })
