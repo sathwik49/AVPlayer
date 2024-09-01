@@ -14,25 +14,58 @@ datasource db {
 }
 
 model User{
-  id   String  @id   @default(uuid())
-  email String 
+  userId   String  @id   @default(uuid())
+  email String @unique
   username String  @unique
   password String
-  posts Post[]
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt 
+
+  songs     Song[]
+  playlists Playlist[]
+}
+
+
+model Song{
+  songId   String   @id  @default(uuid())
+  songName String 
+  songDesc String?
+  artist   String?
+  duration Float?
+  songImg  String?
+  url      String
+  storedFileName String
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt 
+
+  user_id  String
+  user User @relation(fields: [user_id],references: [userId])
+
+  PlaylistSongs PlaylistSongs[]
 }
 
-model Post{
-  id   String  @id  @default(uuid())
-  title  String
-  content String
-  published  Boolean @default(false)
-
-  author User @relation(fields: [authorId] , references: [id])
-  authorId String 
+model Playlist{
+  playlistId   String   @id  @default(uuid())
+  playlistName String   
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt 
+
+  user_id  String
+  user   User  @relation(fields: [user_id],references: [userId]) 
+
+  PlaylistSongs PlaylistSongs[]
 }
+
+model PlaylistSongs{
+  song_id String
+  song  Song @relation(fields: [song_id],references: [songId])
+
+  playlist_id  String
+  playlist  Playlist @relation(fields: [playlist_id],references: [playlistId])
+
+  @@id([song_id,playlist_id])
+}
+

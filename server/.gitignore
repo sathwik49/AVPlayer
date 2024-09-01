@@ -1,6 +1,9 @@
 # prod
 dist/
 
+#origins
+/src/config/origins.ts
+
 # dev
 .yarn/
 !.yarn/releases

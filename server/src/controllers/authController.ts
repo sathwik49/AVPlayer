@@ -33,7 +33,7 @@ export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
       );
     }
 
-    const duplicateEmail = await prisma.user.findFirst({ where: { email } });
+    const duplicateEmail = await prisma.user.findFirst({where:{email}});
     if (duplicateEmail)
       return c.json({ message: "Email Already in use", success: false }, 401);
 
@@ -49,18 +49,18 @@ export const userSignup = async (c: Context<{ Bindings: Bindings }>) => {
         email,
       },
       select: {
-        id: true,
+        userId: true,
         username: true,
       },
     });
     if (user) {
-      await generateAndSetCookie(c, user.id, user.username);
-      // if(!tokenMsg.success){
-      //     return c.json({message:tokenMsg.message,success:tokenMsg.success},400)
-      // }
+      const tokenMsg = await generateAndSetCookie(c, user.userId, user.username);
+      if(!tokenMsg.success){
+          return c.json({message:tokenMsg.message,success:tokenMsg.success},400)
+      }
       return c.json(
         {
-          message: { userId: user.id, username: user.username },
+          message: { userId: user.userId, username: user.username },
           success: true,
         },
         201
@@ -105,7 +105,7 @@ export const userLogin = async (c: Context<{ Bindings: Bindings }>) => {
 
     const tokenMsg = await generateAndSetCookie(
       c,
-      validUser.id,
+      validUser.userId,
       validUser.username
     );
     // if(!tokenMsg.success){
@@ -114,7 +114,7 @@ export const userLogin = async (c: Context<{ Bindings: Bindings }>) => {
 
     return c.json(
       {
-        message: { userId: validUser.id, username: validUser.username },
+        message: { userId: validUser.userId, username: validUser.username },
         success: true,
       },
       200

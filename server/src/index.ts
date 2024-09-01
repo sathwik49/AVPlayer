@@ -2,8 +2,8 @@ import { Context, Hono } from 'hono'
 import { cors } from 'hono/cors'
 import mainRouter from './routes/mainRoute'
 import Bindings from './utils/Bindings'
-import { allowedOrigins } from './config/allowedOrigins'
-
+import { allowedOrigins } from './config/origins'
+import { supabaseSetup } from './utils/supabaseSetup'
 
 const app = new Hono<{
   Bindings:Bindings
@@ -18,6 +18,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+
 
 app.get('/',(c)=>{
   return c.text('Hello Hono')
