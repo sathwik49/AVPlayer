@@ -12,7 +12,8 @@ export const generateAndSetCookie = async (c: Context<{ Bindings: Bindings }>,us
         setCookie(c,'jwt',token,{
             maxAge:7*24*60*60,
             httpOnly:true,
-            secure:c.env.NODE_ENV==="production"
+            secure:c.env.NODE_ENV==="production",
+            sameSite:"Lax",
         }) 
         return {message:"Token set",success:true};
     } catch (error:any) {
